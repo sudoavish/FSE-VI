@@ -1,0 +1,210 @@
+## What is GraphQL?
+
+**GraphQL** is a query language and runtime for APIs (Application Programming Interfaces). It was developed by Facebook and allows clients to request exactly the data they need from a server. GraphQL provides a strongly typed schema that defines what data is available and how to access it.
+
+---
+
+## When to Use GraphQL?
+
+GraphQL is ideal for:
+- **Mobile applications** - where bandwidth is limited and you want to fetch only necessary data
+- **Complex data requirements** - when different clients need different data structures
+- **Rapidly evolving APIs** - where frontend and backend teams work independently
+- **Multiple data sources** - when you need to aggregate data from various backends
+- **Real-time applications** - GraphQL supports subscriptions for real-time updates
+- **Microservices** - to create a unified API layer across multiple services
+
+---
+
+## How is GraphQL Different from REST?
+
+| Aspect | REST | GraphQL |
+|--------|------|---------|
+| **Data Fetching** | Fixed structure per endpoint | Client specifies exact fields needed |
+| **Endpoints** | Multiple endpoints (e.g., users, `/posts`, `/comments`) | Single endpoint |
+| **Over-fetching** | Common - get all data even if you need just 1 field | Eliminated - get only what you request |
+| **Under-fetching** | Common - need multiple requests to get related data | Avoided - fetch related data in one query |
+| **Versioning** | Often requires API versioning (v1, v2, etc.) | No versioning needed - just add new fields |
+| **Query Language** | Uses HTTP methods (GET, POST, PUT, DELETE) | Uses GraphQL query language |
+| **Response Format** | Always JSON (in modern APIs) | Always JSON with exact structure you requested |
+
+---
+
+## Problems GraphQL Solves
+
+1. **Over-fetching** - REST returns all fields, GraphQL returns only what you ask for
+   ```graphql
+   // Instead of getting entire user object
+   query {
+     user(id: 1) {
+       name    // Only get the name
+     }
+   }
+   ```
+
+2. **Under-fetching** - Requires multiple REST calls; GraphQL gets related data in one request
+   ```graphql
+   // One request gets user AND their posts
+   query {
+     user(id: 1) {
+       name
+       posts {
+         title
+       }
+     }
+   }
+   ```
+
+3. **Strong Typing** - GraphQL schema provides clear contracts between frontend and backend
+4. **Better Developer Experience** - Auto-completion and validation in IDEs
+5. **No API versioning needed** - Add new fields without breaking existing queries
+6. **Real-time capabilities** - Built-in subscriptions for live data
+
+_____________________________________________________________________________________________________________
+
+## GraphQL Fundamentals: Types, Resolvers, and Queries
+
+### 1. **Types**
+
+Types define the shape of your data in GraphQL. They specify what fields are available and what data types those fields return.
+
+```graphql
+# Define a User type
+type User {
+  id: ID!           # ! means non-nullable (required)
+  name: String!
+  email: String!
+  age: Int
+  posts: [Post!]!   # Array of Posts (array is required, items are required)
+}
+
+# Define a Post type
+type Post {
+  id: ID!
+  title: String!
+  content: String
+  author: User!     # Reference to User type
+}
+```
+
+**Key Points:**
+- `!` = non-nullable (field must always have a value)
+- `[Post!]!` = array is required and contains required Post items
+- Types can reference other types (relationships)
+
+---
+
+### 2. **Resolvers**
+
+Resolvers are functions that fetch or compute the data for each field in your schema. They connect your GraphQL schema to your actual data sources (database, API, etc.).
+
+```javascript
+// Example resolver implementation
+const resolvers = {
+  // Root Query resolver
+  Query: {
+    user: (parent, args, context, info) => {
+      // args.id contains the ID passed in the query
+      return database.getUserById(args.id);
+    },
+    
+    allUsers: () => {
+      return database.getAllUsers();
+    }
+  },
+
+  // User type resolvers
+  User: {
+    id: (parent) => parent.id,
+    name: (parent) => parent.name,
+    email: (parent) => parent.email,
+    
+    // This resolver fetches related data
+    posts: (parent) => {
+      return database.getPostsByUserId(parent.id);
+    }
+  },
+
+  // Post type resolvers
+  Post: {
+    author: (parent) => {
+      return database.getUserById(parent.authorId);
+    }
+  }
+};
+```
+
+**Resolver Parameters:**
+- `parent` - the object containing this field (returned from parent resolver)
+- `args` - arguments passed to the field in the query
+- `context` - shared data (database connection, user info, etc.)
+- `info` - metadata about the query execution
+
+---
+
+### 3. **Query**
+
+A Query is the entry point for fetching data from a GraphQL API. It's the client's request specifying what data they want.
+
+```graphql
+# Define what queries are available
+type Query {
+  user(id: ID!): User        # Get single user by ID
+  allUsers: [User!]!         # Get all users
+  post(id: ID!): Post        # Get single post by ID
+}
+```
+
+**Example Query from Client:**
+
+```graphql
+query {
+  user(id: "1") {
+    name
+    email
+    posts {
+      title
+      content
+    }
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "data": {
+    "user": {
+      "name": "John Doe",
+      "email": "john@example.com",
+      "posts": [
+        {
+          "title": "GraphQL Intro",
+          "content": "GraphQL is..."
+        }
+      ]
+    }
+  }
+}
+```
+
+---
+
+### **How They Work Together**
+
+1. **Client sends a Query** → "Give me user with id 1 and their posts"
+2. **GraphQL engine validates** → Checks against the schema (Types)
+3. **Resolvers execute** → Fetches user data, then fetches their posts
+4. **Response sent** → Only the requested fields are returned
+
+```
+Client Query
+     ↓
+Schema Validation (Types)
+     ↓
+Execute Resolvers
+     ↓
+Return Data
+```
+
+This structure ensures type safety, prevents over/under-fetching, and makes APIs predictable and easy to document.

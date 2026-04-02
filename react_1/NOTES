@@ -1,0 +1,30 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////
+Features of REACT -> 
+
+1. React offers component based Architecture. Components are small reusable piece of code. (Functional and class component).
+    1.1. Class component -> Using js classes.
+    1.1. Functional component -> Using js Functions which returns HTML like code.
+
+    RULES: A Component name should always start with a capital letter.
+           To render your component on the browser, it should have to be called within the App() Function 
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+What is JSX?
+-> JSX is an XML syntax which looks like HTML.
+
+HTML                        |                    JSX
+                            |
+-> we use class Attribute   | -> we use className Attribute
+-> Do not neccessarilt      | -> Each and every tag must have
+    have closing tags       |    closing tags
+-> You cannot embbed js     | -> You can directly embbed js
+    directly inside HTML    |    in JSX tags
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+How to embbed js in jsx?
+-> using {}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+How is our jsx code converted to js code?
+-> React uses a tool called Babel to convert our jsx code into js code. Babel is a JavaScript compiler that takes our jsx code and transforms it into plain JavaScript that can be understood by the browser.
